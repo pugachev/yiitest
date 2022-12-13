@@ -9,7 +9,9 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
-
+use app\models\FemaleForm;
+use app\models\Female;
+use yii\helpers\ArrayHelper;
 class SiteController extends Controller
 {
     /**
@@ -128,6 +130,52 @@ class SiteController extends Controller
 
     public function actionSay($message = 'こんにちは')
     {
-        return $this->render('say', ['message' => $message]);
+        $model = Female::find()->select(['femalenumber','femalename','femalenote'])->all();
+        // $rcvdatas = ArrayHelper::toArray($model, [
+        //     'app\models\Female' => [
+        //         'femalenumber',
+        //         'femalename',
+        //         'femalenote',
+        //     ],
+        // ]);
+
+        // foreach($model as $key => $value){
+        //     var_dump($model[$key]->femalename);
+        // }
+        // die();
+
+        // $model = new Female();
+        // $model->femalenumber = 'A008';
+        // $model->femalename = '檜山沙耶';
+        // $model->femalenote = 'おさや メガネ美人';
+        // $model->save();
+        // if ($model->validate()) {
+        //     // 良し!
+        // } else {
+        //     // 失敗!
+        //     // $model->getErrors() を使う
+        // }
+
+        return $this->render('say', ['message' => $message,'model'=>$model]);
+    }
+
+    public function actionEntry()
+    {
+        $model = new Female();
+
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            // $model に有効なデータを受け取った場合
+            $rcvdata = Yii::$app->request->post("Female");
+            $model->femalenumber = $rcvdata["femalenumber"];
+            $model->femalename = $rcvdata["femalename"];
+            $model->femalenote = $rcvdata["femalenote"];
+            $model->save();
+            // ここで $model について何か意味のあることをする ...
+
+            return $this->render('entry-confirm', ['model' => $model]);
+        } else {
+            // ページの初期表示か、または、何か検証エラーがある場合
+            return $this->render('entry', ['model' => $model]);
+        }
     }
 }
